@@ -2,13 +2,17 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
+from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix, accuracy_score
+from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 import joblib
 import os
 import json
 
-# create results dir
+
+# ================================================
+# SETUP
+# ================================================
 ROOT = Path(__file__).resolve().parents[1]  # repo root
 RESULTS = ROOT / "results"
 MODELS = ROOT / "models"
@@ -19,6 +23,10 @@ MODELS.mkdir(parents=True, exist_ok=True)
 best_iteration = -1
 bst_booster = None
 
+
+# ================================================
+# LOAD DATA
+# ================================================
 try:
     df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
 except FileNotFoundError:
@@ -38,8 +46,9 @@ preproc = {
 }
 joblib.dump(preproc, MODELS / "preproc.joblib")
 
-
-# train/test
+# ================================================
+# SPLIT & IMBALANCE
+# ================================================
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, stratify=y, random_state=42
 )
@@ -50,40 +59,64 @@ pos = (y_train == 1).sum()
 scale_pos_weight = neg / max(1, pos)
 print(f"neg/pos = {neg}/{pos}, scale_pos_weight={scale_pos_weight:.2f}")
 
-
-model = xgb.XGBClassifier(
-    n_estimators=1000,
-    learning_rate=0.05,
-    max_depth=6,
+# ================================================
+# MODEL DEFINITION + GRID SEARCH
+# ================================================
+xgb_model = xgb.XGBClassifier(
     objective="binary:logistic",
-    use_label_encoder=False,
     eval_metric="auc",
     scale_pos_weight=scale_pos_weight,
     random_state=42,
-    n_jobs=-1
+    use_label_encoder=False,
+    n_jobs=-1,
+    early_stopping_rounds=50,
 )
 
-# Option A: sklearn-style with early_stopping_rounds
-try:
-    model.fit(X_train, y_train, eval_set=[(X_test, y_test)], early_stopping_rounds=50, verbose=50)
-    best_iteration = int(getattr(model, "best_iteration", -1))
-except TypeError as e:
-    print("sklearn fit() does not accept early_stopping_rounds:", e)
-    # Option B: callbacks API
-    try:
-        cb = xgb.callback.EarlyStopping(rounds=50, save_best=True)
-        model.fit(X_train, y_train, eval_set=[(X_test, y_test)], callbacks=[cb])
-        best_iteration = int(getattr(model, "best_iteration", -1))
-    except Exception:
-        # Option C: fallback to xgb.train (always works)
-        dtrain = xgb.DMatrix(X_train, label=y_train)
-        dtest = xgb.DMatrix(X_test, label=y_test)
-        params = model.get_xgb_params() if hasattr(model, "get_xgb_params") else model.get_params()
-        params = {k: v for k, v in params.items() if k != "n_estimators"}
-        num_round = int(model.get_params().get("n_estimators", 100))
-        bst_booster = xgb.train(params, dtrain, num_boost_round=num_round,
-                                evals=[(dtest, "eval")], early_stopping_rounds=50, verbose_eval=50)
-        best_iteration = int(getattr(bst_booster, "best_iteration", -1))
+# Controlled hyperparameter grid
+param_grid = {
+    "n_estimators": [500, 1000],
+    "max_depth": [4, 6],
+    "learning_rate": [0.01, 0.05],
+    "subsample": [0.8, 1.0],
+    "colsample_bytree": [0.7, 1.0],
+    "gamma": [0, 0.1],
+    "lambda": [1, 2],
+    "alpha": [0, 1]
+}
+
+grid_search = GridSearchCV(
+    estimator = xgb_model, 
+    param_grid = param_grid, 
+    scoring = "roc_auc", 
+    cv = 3, verbose = 1, 
+    n_jobs=-1
+    )
+
+grid_search.fit(
+    X_train, y_train,
+    eval_set=[(X_test, y_test)],
+    verbose=False
+    )
+
+print("\nBest parameters:", grid_search.best_params_)
+print("Best CV ROC AUC:", grid_search.best_score_)
+
+
+# ================================================
+# EVALUATE BEST MODEL
+# ================================================
+final_model = xgb.XGBClassifier(
+    **grid_search.best_params_
+)
+final_model.fit(
+    X_train, y_train
+    # eval_set=[(X_test, y_test)],
+    # verbose=50
+    )
+
+
+y_pred = final_model.predict((X_test))
+y_proba = final_model.predict_proba(X_test)[:, 1]
 
 
 # save metrics (use best_iteration local variable)
@@ -93,52 +126,30 @@ metrics = {
 with open(RESULTS / "metrics.json", "w") as f:
     json.dump(metrics, f, indent=2)
 
-# save model or booster depending on training method
-if bst_booster is not None:
-    bst_booster.save_model(str(MODELS / "xgb_baseline_booster.model"))
-    print("Saved booster to", MODELS / "xgb_baseline_booster.model")
-else:
-    joblib.dump(model, MODELS / "xgb_baseline.joblib")
-    print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
+# # save model or booster depending on training method
+# joblib.dump(model, MODELS / "xgb_baseline.joblib")
+# print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
 
-# Prediction: always respect best_iteration
-def _get_booster(m):
-    try:
-        return m.get_booster()
-    except Exception:
-        return m  # maybe already a booster
-
-booster = bst_booster if bst_booster is not None else _get_booster(model)
-dtest = xgb.DMatrix(X_test)
-if best_iteration and best_iteration > 0:
-    try:
-        y_proba = booster.predict(dtest, iteration_range=(0, best_iteration + 1))
-    except TypeError:
-        y_proba = booster.predict(dtest, ntree_limit=best_iteration)
-else:
-    # fallback
-    if hasattr(model, "predict_proba"):
-        y_proba = model.predict_proba(X_test)[:, 1]
-    else:
-        y_proba = booster.predict(dtest)
-y_pred = (np.array(y_proba) > 0.5).astype(int)
 
 
 print(classification_report(y_test, y_pred))
 print("ROC AUC:", roc_auc_score(y_test, y_proba))
 print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 
-metrics = {
-    "classification_report": classification_report(y_test, y_pred, output_dict=True),
-    "roc_auc": float(roc_auc_score(y_test, y_proba)),
-    "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
-    "train_size": len(X_train),
-    "test_size": len(X_test),
-    "scale_pos_weight": scale_pos_weight,
-    "best_iteration": int(getattr(model, "best_iteration", -1))
-}
-with open(RESULTS / "metrics.json", "w") as f:
-    json.dump(metrics, f, indent=2)
+# ================================================
+# SAVE RESULTS & MODEL
+# ================================================
+# metrics = {
+#     "classification_report": classification_report(y_test, y_pred, output_dict=True),
+#     "roc_auc": float(roc_auc_score(y_test, y_proba)),
+#     "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+#     "train_size": len(X_train),
+#     "test_size": len(X_test),
+#     "scale_pos_weight": scale_pos_weight,
+#     "best_iteration": int(getattr(model, "best_iteration", -1))
+# }
+# with open(RESULTS / "metrics.json", "w") as f:
+#     json.dump(metrics, f, indent=2)
 
-# save model
-joblib.dump(model, MODELS / "xgb_baseline.joblib")
+# # save model
+# joblib.dump(model, MODELS / "xgb_baseline.joblib")
