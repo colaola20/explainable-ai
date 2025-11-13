@@ -1,0 +1,136 @@
+{
+  "baseline_metrics": {
+    "Accuracy": 0.757,
+    "Precision": 0.46042296072507555,
+    "Recall": 0.5742275810097965,
+    "F1 Score": 0.5110663983903421,
+    "ROC AUC": 0.760378650720174
+  },
+  "tuned_metrics": {
+    "Accuracy": 0.7648333333333334,
+    "Precision": 0.47588978185993114,
+    "Recall": 0.624717407686511,
+    "F1 Score": 0.5402411208862822,
+    "ROC AUC": 0.7793206205831219
+  },
+  "improvement_percentage": {
+    "Accuracy": 1.0347864376926497,
+    "Precision": 3.359263645431234,
+    "Recall": 8.792650918635175,
+    "F1 Score": 5.708597275780407,
+    "ROC AUC": 2.4911233166538165
+  },
+  "best_parameters": {
+    "colsample_bytree": 0.7,
+    "gamma": 0.1,
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 1000,
+    "reg_alpha": 1,
+    "reg_lambda": 2,
+    "subsample": 0.8
+  },
+  "best_cv_score": 0.7845434953501806,
+  "classification_report": {
+    "0": {
+      "precision": 0.8830436824800376,
+      "recall": 0.8046222983094372,
+      "f1-score": 0.8420109730153398,
+      "support": 4673.0
+    },
+    "1": {
+      "precision": 0.47588978185993114,
+      "recall": 0.624717407686511,
+      "f1-score": 0.5402411208862822,
+      "support": 1327.0
+    },
+    "accuracy": 0.7648333333333334,
+    "macro avg": {
+      "precision": 0.6794667321699843,
+      "recall": 0.714669852997974,
+      "f1-score": 0.6911260469508109,
+      "support": 6000.0
+    },
+    "weighted avg": {
+      "precision": 0.7929948114595574,
+      "recall": 0.7648333333333334,
+      "f1-score": 0.7752695407194633,
+      "support": 6000.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      3760,
+      913
+    ],
+    [
+      498,
+      829
+    ]
+  ],
+  "train_size": 24000,
+  "test_size": 6000,
+  "scale_pos_weight": 3.520625353173856,
+  "feature_importance": [
+    {
+      "feature": "pay_0",
+      "importance": 0.3251799941062927
+    },
+    {
+      "feature": "pay_2",
+      "importance": 0.17135679721832275
+    },
+    {
+      "feature": "pay_3",
+      "importance": 0.06945334374904633
+    },
+    {
+      "feature": "pay_4",
+      "importance": 0.06290756165981293
+    },
+    {
+      "feature": "pay_5",
+      "importance": 0.050655242055654526
+    },
+    {
+      "feature": "pay_6",
+      "importance": 0.0357077494263649
+    },
+    {
+      "feature": "limit_bal",
+      "importance": 0.027111630886793137
+    },
+    {
+      "feature": "pay_amt2",
+      "importance": 0.0260089710354805
+    },
+    {
+      "feature": "pay_amt3",
+      "importance": 0.0236961767077446
+    },
+    {
+      "feature": "pay_amt1",
+      "importance": 0.022847767919301987
+    },
+    {
+      "feature": "bill_amt1",
+      "importance": 0.02094329334795475
+    },
+    {
+      "feature": "bill_amt2",
+      "importance": 0.017346076667308807
+    },
+    {
+      "feature": "pay_amt4",
+      "importance": 0.015532789751887321
+    },
+    {
+      "feature": "pay_amt6",
+      "importance": 0.015352246351540089
+    },
+    {
+      "feature": "pay_amt5",
+      "importance": 0.014721252955496311
+    }
+  ]
+}

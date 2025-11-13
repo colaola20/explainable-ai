@@ -1,0 +1,58 @@
+{
+  "method": "SHAP",
+  "computation_time_seconds": 0.6058111190795898,
+  "avg_time_per_instance": 0.0001009685198465983,
+  "consistency_variance": 0.018810665234923363,
+  "consistency_std": 0.13715197145938873,
+  "avg_nonzero_features": 21.152333333333335,
+  "avg_features_above_threshold": 10.427666666666667,
+  "features_covered": 23,
+  "features_with_nonzero_importance": 23,
+  "shap_values_std": 0.16088372468948364,
+  "shap_values_mean": 0.08536830544471741,
+  "shap_values_max": 2.090053081512451,
+  "shap_values_min": 1.2131640687584877e-06,
+  "top_10_features": [
+    {
+      "feature": "pay_0",
+      "importance": 0.47049492597579956
+    },
+    {
+      "feature": "limit_bal",
+      "importance": 0.21943670511245728
+    },
+    {
+      "feature": "bill_amt1",
+      "importance": 0.136283278465271
+    },
+    {
+      "feature": "pay_2",
+      "importance": 0.1271899938583374
+    },
+    {
+      "feature": "pay_amt2",
+      "importance": 0.10033553838729858
+    },
+    {
+      "feature": "pay_amt1",
+      "importance": 0.09428964555263519
+    },
+    {
+      "feature": "pay_3",
+      "importance": 0.09249278903007507
+    },
+    {
+      "feature": "pay_amt3",
+      "importance": 0.09136931598186493
+    },
+    {
+      "feature": "pay_amt6",
+      "importance": 0.05559542402625084
+    },
+    {
+      "feature": "pay_4",
+      "importance": 0.05462184175848961
+    }
+  ],
+  "n_samples_explained": 6000
+}
