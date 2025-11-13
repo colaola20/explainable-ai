@@ -119,19 +119,6 @@ y_pred = final_model.predict((X_test))
 y_proba = final_model.predict_proba(X_test)[:, 1]
 
 
-# save metrics (use best_iteration local variable)
-metrics = {
-    "best_iteration": int(best_iteration)
-}
-with open(RESULTS / "metrics.json", "w") as f:
-    json.dump(metrics, f, indent=2)
-
-# # save model or booster depending on training method
-# joblib.dump(model, MODELS / "xgb_baseline.joblib")
-# print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
-
-
-
 print(classification_report(y_test, y_pred))
 print("ROC AUC:", roc_auc_score(y_test, y_proba))
 print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
@@ -139,17 +126,17 @@ print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 # ================================================
 # SAVE RESULTS & MODEL
 # ================================================
-# metrics = {
-#     "classification_report": classification_report(y_test, y_pred, output_dict=True),
-#     "roc_auc": float(roc_auc_score(y_test, y_proba)),
-#     "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
-#     "train_size": len(X_train),
-#     "test_size": len(X_test),
-#     "scale_pos_weight": scale_pos_weight,
-#     "best_iteration": int(getattr(model, "best_iteration", -1))
-# }
-# with open(RESULTS / "metrics.json", "w") as f:
-#     json.dump(metrics, f, indent=2)
+metrics = {
+    "classification_report": classification_report(y_test, y_pred, output_dict=True),
+    "roc_auc": float(roc_auc_score(y_test, y_proba)),
+    "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+    "train_size": len(X_train),
+    "test_size": len(X_test),
+    "scale_pos_weight": scale_pos_weight,
+}
+with open(RESULTS / "metrics.json", "w") as f:
+    json.dump(metrics, f, indent=2)
 
-# # save model
-# joblib.dump(model, MODELS / "xgb_baseline.joblib")
+# save model
+joblib.dump(final_model, MODELS / "xgb_baseline.joblib")
+print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
