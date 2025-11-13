@@ -136,6 +136,9 @@ print(classification_report(y_test, y_pred))
 print("ROC AUC:", roc_auc_score(y_test, y_proba))
 print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 
+joblib.dump(final_model, MODELS / "xgb_tuned_final.joblib")
+print(f" Model saved to {MODELS / 'xgb_tuned_final.joblib'}")
+
 # ================================================
 # SAVE RESULTS & MODEL
 # ================================================
