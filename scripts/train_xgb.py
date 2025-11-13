@@ -9,6 +9,9 @@ import joblib
 import os
 import json
 
+# TO RUN:
+# python scripts/train_xgb.py
+
 
 # ================================================
 # SETUP

@@ -8,6 +8,9 @@ import json
 import time
 from sklearn.model_selection import train_test_split
 
+# TO RUN:
+# python scripts/shap_xai.py
+
 # ================================================
 # DIR SETUP
 # ================================================
@@ -25,7 +28,7 @@ print("="*60)
 # LOAD MODEL & DATA
 # ================================================
 print("\nLoading model and data...")
-model = joblib.load(MODELS / "xgb_tuned_final.joblib")
+model = joblib.load(MODELS / "xgb_baseline.joblib")
 df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
 
 y = df['default'].astype(int)
