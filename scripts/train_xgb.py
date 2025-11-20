@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 import joblib
@@ -23,17 +23,20 @@ MODELS = ROOT / "models"
 RESULTS.mkdir(parents=True, exist_ok=True)
 MODELS.mkdir(parents=True, exist_ok=True)
 
-best_iteration = -1
-bst_booster = None
-
 
 # ================================================
 # LOAD DATA
 # ================================================
 try:
-    df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
+    df = pd.read_csv('../data_preprocessing/data/processed/preprocessed_data.csv')
 except FileNotFoundError:
     raise FileNotFoundError("Preprocessed CSV not found. Check your path.")
+
+
+print(f"Dataset shape: {df.shape}")
+print(f"Default rate: {df['default'].mean():.2%}")
+print(f"Class distribution:\n{df['default'].value_counts()}")
+
 
 # prepare X/y
 y = df['default'].astype(int)
@@ -121,6 +124,9 @@ final_model.fit(
 y_pred = final_model.predict((X_test))
 y_proba = final_model.predict_proba(X_test)[:, 1]
 
+optimal_threshold = 0.4
+y_pred_new = (y_proba >= optimal_threshold).astype(int)
+
 
 print(classification_report(y_test, y_pred))
 print("ROC AUC:", roc_auc_score(y_test, y_proba))
@@ -129,17 +135,17 @@ print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 # ================================================
 # SAVE RESULTS & MODEL
 # ================================================
-metrics = {
-    "classification_report": classification_report(y_test, y_pred, output_dict=True),
-    "roc_auc": float(roc_auc_score(y_test, y_proba)),
-    "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
-    "train_size": len(X_train),
-    "test_size": len(X_test),
-    "scale_pos_weight": scale_pos_weight,
-}
-with open(RESULTS / "metrics.json", "w") as f:
-    json.dump(metrics, f, indent=2)
+# metrics = {
+#     "classification_report": classification_report(y_test, y_pred, output_dict=True),
+#     "roc_auc": float(roc_auc_score(y_test, y_proba)),
+#     "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+#     "train_size": len(X_train),
+#     "test_size": len(X_test),
+#     "scale_pos_weight": scale_pos_weight,
+# }
+# with open(RESULTS / "metrics.json", "w") as f:
+#     json.dump(metrics, f, indent=2)
 
 # save model
-joblib.dump(final_model, MODELS / "xgb_baseline.joblib")
-print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
+# joblib.dump(final_model, MODELS / "xgb_baseline.joblib")
+# print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
