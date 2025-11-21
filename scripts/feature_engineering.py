@@ -102,10 +102,6 @@ df['pay_status_max'] = df[pay_status_cols].max(axis=1)
 # Count severe delays (>= 2 months late)
 df['severe_delay_count'] = (df[pay_status_cols] >= 2).sum(axis=1)
 
-# Recent vs historical payment status
-df['pay_status_recent'] = df['pay_0']  # Most recent
-df['pay_status_worst'] = df[pay_status_cols].max(axis=1)  # Worst ever
-
 print(f"✓ Added 5 repayment status features")
 
 # 7. AGE-RELATED INTERACTIONS

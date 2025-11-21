@@ -17,8 +17,8 @@ import json
 # SETUP
 # ================================================
 ROOT = Path(__file__).resolve().parents[1]  # repo root
-RESULTS = ROOT / "results"
-MODELS = ROOT / "models"
+RESULTS = ROOT / "results_for_top_30"
+MODELS = ROOT / "models_for_top_30"
 
 RESULTS.mkdir(parents=True, exist_ok=True)
 MODELS.mkdir(parents=True, exist_ok=True)
@@ -28,7 +28,7 @@ MODELS.mkdir(parents=True, exist_ok=True)
 # LOAD DATA
 # ================================================
 try:
-    df = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data.csv')
+    df = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data_top_30.csv')
 except FileNotFoundError:
     raise FileNotFoundError("Preprocessed CSV not found. Check your path.")
 
@@ -122,16 +122,31 @@ print(f"neg/pos = {neg}/{pos}, scale_pos_weight={scale_pos_weight:.2f}")
 
 # BEST PARAMS FOR preprocessed_data.csv dataset
 
-best_params = {
-    'alpha': 1,
-    'colsample_bytree': 0.7,
-    'gamma': 0,
-    'reg_lambda': 3,  # Note: 'lambda' → 'reg_lambda' in XGBoost API
-    'learning_rate': 0.01,
-    'max_depth': 6,
-    'n_estimators': 500,
-    'subsample': 0.8
-}
+# best_params = {
+#     'alpha': 1,
+#     'colsample_bytree': 0.7,
+#     'gamma': 0,
+#     'reg_lambda': 3,  # Note: 'lambda' → 'reg_lambda' in XGBoost API
+#     'learning_rate': 0.01,
+#     'max_depth': 6,
+#     'n_estimators': 500,
+#     'subsample': 0.8
+# }
+
+# BEST PARAMS FOR preprocessed_data_top_30.csv dataset
+
+# best_params = {
+#     'alpha': 1,
+#     'colsample_bytree': 0.9,
+#     'gamma': 0.1,
+#     'reg_lambda': 3,  # Note: 'lambda' → 'reg_lambda' in XGBoost API
+#     'learning_rate': 0.01,
+#     'max_depth': 4,
+#     'n_estimators': 500,
+#     'subsample': 0.7
+# }
+
+
 
 # SKIP GridSearch for future running on preprocessed_data.csv dataset
 
@@ -141,15 +156,90 @@ print("="*60)
 
 final_model = xgb.XGBClassifier(
     # **grid_search.best_params_,
-    **best_params,
+    #**best_params,
+
     objective="binary:logistic",
     eval_metric="auc",
     scale_pos_weight=scale_pos_weight,
     random_state=42,
     use_label_encoder=False,
     n_jobs=-1,
-    early_stopping_rounds=50 
+    early_stopping_rounds=50,
+
+# ================================================
+# MODEL 1: BALANCED CONFIGURATION
+# ================================================
+
+    # KEY CHANGES for balanced features:
+    max_depth=3,              # Lower depth = can't rely on one feature
+    min_child_weight=10,      # Need more samples per leaf
+    learning_rate=0.05,       # Faster learning
+    n_estimators=500,         
+    subsample=0.7,            # Use 70% of data per tree
+    colsample_bytree=0.5,     # Use only 50% of features per tree! KEY!
+    colsample_bylevel=0.7,    # And 70% per level
+    
+    # Regularization
+    reg_alpha=1,              # L1 regularization
+    reg_lambda=3,             # L2 regularization
+    gamma=0.5,                # Minimum loss reduction
 )
+
+# ================================================
+# MODEL 2: VERY SHALLOW TREES
+# ================================================
+
+# final_model = xgb.XGBClassifier(
+#     objective="binary:logistic",
+#     eval_metric="auc",
+#     scale_pos_weight=scale_pos_weight,
+#     random_state=42,
+#     use_label_encoder=False,
+#     n_jobs=-1,
+#     early_stopping_rounds=50,
+    
+#     max_depth=2,              # VERY shallow
+#     min_child_weight=20,      
+#     learning_rate=0.1,        
+#     n_estimators=1000,        # More trees to compensate
+#     subsample=0.8,            
+#     colsample_bytree=0.6,     
+    
+#     reg_alpha=0.5,            
+#     reg_lambda=2,             
+#     gamma=0.3,                
+# )
+
+# ================================================
+# MODEL 3: DART (Dropouts)
+# ================================================
+
+# final_model = xgb.XGBClassifier(
+#     objective="binary:logistic",
+#     eval_metric="auc",
+#     scale_pos_weight=scale_pos_weight,
+#     random_state=42,
+#     use_label_encoder=False,
+#     n_jobs=-1,
+#     early_stopping_rounds=50,
+    
+#     booster='dart',           # Use DART instead of gbtree
+#     rate_drop=0.3,            # Drop 30% of trees each round
+#     skip_drop=0.5,            # 50% chance to skip dropout
+    
+#     max_depth=4,              
+#     min_child_weight=5,       
+#     learning_rate=0.05,       
+#     n_estimators=500,         
+#     subsample=0.8,            
+#     colsample_bytree=0.7,     
+    
+#     reg_alpha=1,              
+#     reg_lambda=2,             
+# )
+
+# ================================================
+
 
 final_model.fit(
     X_train_sub, y_train_sub,
@@ -214,47 +304,47 @@ print(feature_importance.head(15))
 # ================================================
 # SAVE RESULTS & MODEL
 # ================================================
-metrics = {
-    # "best_params": grid_search.best_params_,
-    "best_params": best_params,
-    # "best_cv_roc_auc": float(grid_search.best_score_),
-    "optimal_threshold": float(optimal_threshold),
-    "best_iteration": int(final_model.best_iteration),
-    "default_threshold": {
-        "classification_report": classification_report(y_test, y_pred, output_dict=True),
-        "roc_auc": float(roc_auc_score(y_test, y_proba)),
-        "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
-    },
-    "optimal_threshold": {
-        "classification_report": classification_report(y_test, y_pred_optimal, output_dict=True),
-        "roc_auc": float(roc_auc_score(y_test, y_proba)),
-        "confusion_matrix": confusion_matrix(y_test, y_pred_optimal).tolist(),
-    },
-    "train_size": len(X_train_sub),
-    "val_size": len(X_val),
-    "test_size": len(X_test),
-    "scale_pos_weight": float(scale_pos_weight),
-}
-with open(RESULTS / "metrics.json", "w") as f:
-    json.dump(metrics, f, indent=2)
+# metrics = {
+#     #"best_params": best_params,
+#     "best_params": grid_search.best_params_,
+#     "best_cv_roc_auc": float(grid_search.best_score_),
+#     "optimal_threshold": float(optimal_threshold),
+#     "best_iteration": int(final_model.best_iteration),
+#     "default_threshold": {
+#         "classification_report": classification_report(y_test, y_pred, output_dict=True),
+#         "roc_auc": float(roc_auc_score(y_test, y_proba)),
+#         "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+#     },
+#     "optimal_threshold": {
+#         "classification_report": classification_report(y_test, y_pred_optimal, output_dict=True),
+#         "roc_auc": float(roc_auc_score(y_test, y_proba)),
+#         "confusion_matrix": confusion_matrix(y_test, y_pred_optimal).tolist(),
+#     },
+#     "train_size": len(X_train_sub),
+#     "val_size": len(X_val),
+#     "test_size": len(X_test),
+#     "scale_pos_weight": float(scale_pos_weight),
+# }
+# with open(RESULTS / "metrics.json", "w") as f:
+#     json.dump(metrics, f, indent=2)
 
-# Save feature importance
-feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
+# # Save feature importance
+# feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
 
-# Save preprocessing metadata
-feature_names = X.columns.to_list()
-num_cols = X.select_dtypes(include='number').columns.tolist()
-preproc = {
-    "feature_names": feature_names,
-    "num_cols": num_cols,
-    "median": X[feature_names].median().to_dict(),
-    "optimal_threshold": float(optimal_threshold),
-}
-joblib.dump(preproc, MODELS / "preproc.joblib")
+# # Save preprocessing metadata
+# feature_names = X.columns.to_list()
+# num_cols = X.select_dtypes(include='number').columns.tolist()
+# preproc = {
+#     "feature_names": feature_names,
+#     "num_cols": num_cols,
+#     "median": X[feature_names].median().to_dict(),
+#     "optimal_threshold": float(optimal_threshold),
+# }
+# joblib.dump(preproc, MODELS / "preproc.joblib")
 
-# save model
-joblib.dump(final_model, MODELS / "xgb_model.joblib")
-print("Saved sklearn wrapper model to", MODELS / "xgb_model.joblib")
+# # save model
+# joblib.dump(final_model, MODELS / "xgb_model.joblib")
+# print("Saved sklearn wrapper model to", MODELS / "xgb_model.joblib")
 
 print(f"\n{'='*60}")
 print("SAVED FILES:")
