@@ -31,7 +31,8 @@ bst_booster = None
 # LOAD DATA
 # ================================================
 try:
-    df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
+    
+    df = pd.read_csv('data\processed\preprocessed_data_GiveMeSomeCredit.csv')
 except FileNotFoundError:
     raise FileNotFoundError("Preprocessed CSV not found. Check your path.")
 
@@ -141,5 +142,5 @@ with open(RESULTS / "metrics.json", "w") as f:
     json.dump(metrics, f, indent=2)
 
 # save model
-joblib.dump(final_model, MODELS / "xgb_baseline.joblib")
-print("Saved sklearn wrapper model to", MODELS / "xgb_baseline.joblib")
+joblib.dump(final_model, MODELS / "xgb_baseline_giveMeSomeCredit.joblib")
+print("Saved sklearn wrapper model to", MODELS / "xgb_baseline_giveMeSomeCredit.joblib")

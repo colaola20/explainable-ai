@@ -1,0 +1,32 @@
+{
+  "dataset": "Give Me Some Credit",
+  "source_file": "C:\\Users\\estos\\Documents\\XAI\\explainable-ai\\data_preprocessing\\data\\giveMeSomeCredit.csv",
+  "output_file": "C:\\Users\\estos\\Documents\\XAI\\explainable-ai\\data\\processed\\preprocessed_data.csv",
+  "original_rows": 149233,
+  "final_rows": 149219,
+  "rows_removed": 14,
+  "original_features": 10,
+  "engineered_features": 4,
+  "final_features": 14,
+  "total_columns": 15,
+  "target_column": "default",
+  "class_balance": {
+    "no_default": 139216,
+    "default": 10003,
+    "default_rate": 6.7,
+    "imbalance_ratio": 13.91742477256823
+  },
+  "top_5_correlations": {
+    "has_late_payments": 0.314066009922779,
+    "revolvingutilizationofunsecuredlines": 0.28210289581696757,
+    "numberoftime3059dayspastduenotworse": 0.13179174052782558,
+    "numberoftimes90dayslate": 0.12263301273870139,
+    "total_late_payments": 0.12082415604879568
+  },
+  "features_created": [
+    "total_late_payments",
+    "has_late_payments",
+    "income_to_debt",
+    "age_group"
+  ]
+}
