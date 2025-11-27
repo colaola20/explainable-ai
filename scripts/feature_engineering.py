@@ -130,6 +130,132 @@ df['crisis_indicator'] = (
 
 print(f"✓ Added 1 crisis indicator feature")
 
+# 10. Payment trend analysis
+df['pay_improvement'] = df['pay_0'] - df['pay_6']  # Getting better or worse?
+df['pay_volatility'] = df[['pay_0', 'pay_2', 'pay_3', 'pay_4', 'pay_5', 'pay_6']].std(axis=1)
+df['pay_deterioration'] = (df['pay_0'] > df['pay_2']).astype(int)  # Recent worsening
+
+# 11. Consecutive delay patterns
+df['consecutive_delays'] = 0
+for i in range(len(df)):
+    pay_cols = df.loc[i, ['pay_0', 'pay_2', 'pay_3', 'pay_4', 'pay_5', 'pay_6']]
+    # Count consecutive months with delay (>0)
+    consecutive = 0
+    max_consecutive = 0
+    for val in pay_cols:
+        if val > 0:
+            consecutive += 1
+            max_consecutive = max(max_consecutive, consecutive)
+        else:
+            consecutive = 0
+    df.loc[i, 'consecutive_delays'] = max_consecutive
+
+# 12. Recent vs historical payment behavior
+df['recent_pay_mean'] = df[['pay_0', 'pay_2', 'pay_3']].mean(axis=1)  # Last 3 months
+df['historical_pay_mean'] = df[['pay_4', 'pay_5', 'pay_6']].mean(axis=1)  # Older months
+df['pay_trend_change'] = df['recent_pay_mean'] - df['historical_pay_mean']
+
+
+# 13. Payment sufficiency
+df['payment_coverage_1'] = df['pay_amt1'] / (df['bill_amt1'] + 1)  # Did they pay enough?
+df['payment_coverage_2'] = df['pay_amt2'] / (df['bill_amt2'] + 1)
+df['payment_coverage_mean'] = df[[f'pay_amt{i}' for i in range(1,7)]].sum(axis=1) / \
+                                (df[[f'bill_amt{i}' for i in range(1,7)]].sum(axis=1) + 1)
+
+# 14. Bill growth rate
+df['bill_growth'] = (df['bill_amt1'] - df['bill_amt6']) / (df['bill_amt6'] + 1)
+df['bill_acceleration'] = (df['bill_amt1'] - df['bill_amt2']) - (df['bill_amt2'] - df['bill_amt3'])
+
+# 15 .Minimum payment patterns
+df['pays_minimum_only'] = (df['pay_amt1'] < 0.1 * df['bill_amt1']).astype(int)
+df['underpayment_count'] = sum((df[f'pay_amt{i}'] < 0.5 * df[f'bill_amt{i}']).astype(int) 
+                                for i in range(1, 7))
+
+# Utilization trends
+df['util_increasing'] = (df['util_rate_1'] > df['util_rate_6']).astype(int)
+df['util_volatility'] = df[['util_rate_1', 'util_rate_2', 'util_rate_3', 
+                              'util_rate_4', 'util_rate_5', 'util_rate_6']].std(axis=1)
+df['util_spike'] = df['util_rate_max'] - df['util_rate_mean']  # Maximum spike above average
+
+# Maxed out credit
+df['months_maxed_out'] = sum((df[f'util_rate_{i}'] > 0.9).astype(int) for i in range(1, 7))
+df['recently_maxed_out'] = (df['util_rate_1'] > 0.9).astype(int)
+
+
+# Credit limit relative to demographics
+df['limit_per_age'] = df['limit_bal'] / (df['age'] + 1)
+df['high_limit_young'] = ((df['limit_bal'] > df['limit_bal'].median()) & 
+                          (df['age'] < 30)).astype(int)
+
+# Education and payment behavior
+df['education_risk'] = df['education'].map({1: 0, 2: 1, 3: 2, 4: 3})  # Higher = more risk
+df['edu_payment_interaction'] = df['education_risk'] * df['pay_status_mean']
+
+# Marriage and financial stress
+df['married_high_util'] = ((df['marriage'] == 1) & 
+                           (df['util_rate_mean'] > 0.7)).astype(int)
+
+# Cash advance usage (negative bill amounts indicate overpayment or cash advance)
+df['cash_advance_count'] = sum((df[f'bill_amt{i}'] < 0).astype(int) for i in range(1, 7))
+
+# Payment-to-limit ratio
+df['payment_capacity'] = df['pay_amt_mean'] / (df['limit_bal'] + 1)
+
+# Financial strain score (composite)
+df['financial_strain'] = (
+    (df['util_rate_mean'] > 0.8).astype(int) * 2 +
+    (df['pay_status_max'] >= 2).astype(int) * 3 +
+    (df['bill_growth'] > 0.5).astype(int) * 1 +
+    (df['payment_coverage_mean'] < 0.3).astype(int) * 2
+)
+
+# Interaction features for top predictors
+df['pay_status_x_util'] = df['pay_status_max'] * df['util_rate_max']
+df['recent_pay_x_consecutive'] = df['recent_pay_mean'] * df['consecutive_delays']
+df['pay_x_limit'] = df['recent_pay_mean'] / (df['limit_bal'] + 1)
+
+# Payment behavior interactions
+df['pay_status_x_util'] = df['pay_status_max'] * df['util_rate_max']
+df['severe_x_recent'] = df['severe_delay_count'] * df['recent_pay_mean']
+df['consecutive_x_util'] = df['consecutive_delays'] * df['util_rate_max']
+
+# Debt stress indicators
+df['debt_x_delay'] = df['debt_to_limit_max'] * df['pay_status_max']
+df['maxed_x_delay'] = df['months_maxed_out'] * df['consecutive_delays']
+
+# Credit utilization interactions
+df['util_x_limit'] = df['util_rate_max'] * df['limit_bal']
+df['util_spike_x_pay'] = (df['util_rate_max'] - df['util_rate_mean']) * df['pay_status_mean']
+
+# Age-based risk
+df['age_x_debt'] = df['age'] * df['debt_to_limit_max']
+df['young_high_util'] = ((df['age'] < 30) & (df['util_rate_max'] > 0.8)).astype(int)
+
+# Payment coverage interactions
+df['payment_ratio_x_util'] = (df['pay_amt_mean'] / (df['bill_amt_mean'] + 1)) * df['util_rate_max']
+
+# Square and cube of most important features
+df['recent_pay_mean_sq'] = df['recent_pay_mean'] ** 2
+df['recent_pay_mean_cube'] = df['recent_pay_mean'] ** 3
+df['pay_status_max_sq'] = df['pay_status_max'] ** 2
+
+# Log transforms for skewed features
+df['log_limit_bal'] = np.log1p(df['limit_bal'])
+# df['log_bill_amt_mean'] = np.log1p(df['bill_amt_mean'])
+
+# Interaction features between top performers
+df['severe_recent_x_pay_max'] = df['severe_x_recent'] * df['pay_status_max']
+df['consecutive_x_severe'] = df['consecutive_delays'] * df['severe_delay_count']
+df['recent_pay_x_pay_max'] = df['recent_pay_mean'] * df['pay_status_max']
+
+# Risk escalation features
+df['pay_deterioration'] = df['pay_0'] - df['recent_pay_mean']  # Getting worse?
+df['utilization_trend'] = df['util_rate_max'] - df['util_rate_1']  # Increasing usage?
+
+# Behavioral consistency
+df['payment_volatility'] = df['pay_amt_std'] / (df['pay_amt_mean'] + 1)
+df['bill_stability'] = df['bill_amt_std'] / (df['bill_amt_mean'] + 1)
+
 # ================================================
 # HANDLE INFINITE/NAN VALUES
 # ================================================

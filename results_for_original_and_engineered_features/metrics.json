@@ -1,0 +1,97 @@
+{
+  "best_params": {
+    "alpha": 1,
+    "colsample_bytree": 0.7,
+    "gamma": 0,
+    "reg_lambda": 3,
+    "learning_rate": 0.01,
+    "max_depth": 6,
+    "n_estimators": 500,
+    "subsample": 0.8
+  },
+  "optimal_threshold": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8835341365461847,
+        "recall": 0.8003423924673657,
+        "f1-score": 0.8398832247922748,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.47198641765704585,
+        "recall": 0.6284853051996986,
+        "f1-score": 0.5391079508726567,
+        "support": 1327.0
+      },
+      "accuracy": 0.7623333333333333,
+      "macro avg": {
+        "precision": 0.6777602771016153,
+        "recall": 0.7144138488335321,
+        "f1-score": 0.6894955878324658,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7925134993852035,
+        "recall": 0.7623333333333333,
+        "f1-score": 0.7733617600437194,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7841387399047681,
+    "confusion_matrix": [
+      [
+        3740,
+        933
+      ],
+      [
+        493,
+        834
+      ]
+    ]
+  },
+  "best_iteration": 397,
+  "default_threshold": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8815242494226327,
+        "recall": 0.8168200299593409,
+        "f1-score": 0.8479395756969899,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.4874251497005988,
+        "recall": 0.613413715146948,
+        "f1-score": 0.5432098765432098,
+        "support": 1327.0
+      },
+      "accuracy": 0.7718333333333334,
+      "macro avg": {
+        "precision": 0.6844746995616158,
+        "recall": 0.7151168725531445,
+        "f1-score": 0.6955747261200999,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7943626652007763,
+        "recall": 0.7718333333333334,
+        "f1-score": 0.7805435239008122,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7841387399047681,
+    "confusion_matrix": [
+      [
+        3817,
+        856
+      ],
+      [
+        513,
+        814
+      ]
+    ]
+  },
+  "train_size": 20400,
+  "val_size": 3600,
+  "test_size": 6000,
+  "scale_pos_weight": 3.5202747617992465
+}

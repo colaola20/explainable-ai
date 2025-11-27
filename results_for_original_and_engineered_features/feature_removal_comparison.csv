@@ -1,0 +1,5 @@
+config,features_removed,features_kept,test_auc,improvement
+Baseline (all features),0,113,0.7841387399047681,0.0
+Remove highly negative,23,90,0.7826905223307393,-0.0014482175740287984
+Remove all negative,45,68,0.7819646799722177,-0.0021740599325503762
+Remove all negative + near-zero,64,49,0.7822430996194045,-0.0018956402853635979
