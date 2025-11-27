@@ -256,6 +256,13 @@ df['utilization_trend'] = df['util_rate_max'] - df['util_rate_1']  # Increasing 
 df['payment_volatility'] = df['pay_amt_std'] / (df['pay_amt_mean'] + 1)
 df['bill_stability'] = df['bill_amt_std'] / (df['bill_amt_mean'] + 1)
 
+# More powerful interactions
+df['consecutive_x_utilization'] = df['consecutive_delays'] * df['util_rate_max']
+#df['payment_stress'] = df['bill_amt_mean'] / (df['pay_amt_mean'] + 1)
+
+
+
+
 # ================================================
 # HANDLE INFINITE/NAN VALUES
 # ================================================

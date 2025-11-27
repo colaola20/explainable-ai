@@ -1,0 +1,86 @@
+{
+  "model": "LightGBM",
+  "optimal_threshold": 0.4753221555003092,
+  "best_iteration": 423,
+  "best_val_auc": 0.7933598538340777,
+  "default_threshold": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8827667057444314,
+        "recall": 0.8056922747699551,
+        "f1-score": 0.8424703513090177,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.47665706051873197,
+        "recall": 0.6232102486812359,
+        "f1-score": 0.5401698236446767,
+        "support": 1327.0
+      },
+      "accuracy": 0.7653333333333333,
+      "macro avg": {
+        "precision": 0.6797118831315817,
+        "recall": 0.7144512617255955,
+        "f1-score": 0.6913200874768473,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7929487892086808,
+        "recall": 0.7653333333333333,
+        "f1-score": 0.775611551273921,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7833208973095132,
+    "confusion_matrix": [
+      [
+        3765,
+        908
+      ],
+      [
+        500,
+        827
+      ]
+    ]
+  },
+  "optimal_threshold_metrics": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8848868337795084,
+        "recall": 0.778086882088594,
+        "f1-score": 0.8280573901161467,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.45161290322580644,
+        "recall": 0.6435568952524491,
+        "f1-score": 0.5307644499689248,
+        "support": 1327.0
+      },
+      "accuracy": 0.7483333333333333,
+      "macro avg": {
+        "precision": 0.6682498685026574,
+        "recall": 0.7108218886705215,
+        "f1-score": 0.6794109200425358,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7890610828053812,
+        "recall": 0.7483333333333332,
+        "f1-score": 0.7623061015202528,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7833208973095132,
+    "confusion_matrix": [
+      [
+        3636,
+        1037
+      ],
+      [
+        473,
+        854
+      ]
+    ]
+  }
+}

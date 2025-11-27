@@ -1,0 +1,7 @@
+Model,Test_AUC,Type
+Rank Average,0.7843169349294662,Ensemble
+XGBoost,0.7842687980834279,Single
+Weighted Average,0.7841584139255945,Ensemble
+Simple Average,0.784158091400663,Ensemble
+LightGBM,0.7833208973095132,Single
+CatBoost,0.7828036479504911,Single

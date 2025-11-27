@@ -284,8 +284,10 @@ baseline_model.fit(
     verbose=50
 )
 
-print(f"\nBest iteration: {baseline_model.best_iteration}")
-print(f"Best validation score: {baseline_model.best_score:.4f}")
+best_iter = getattr(baseline_model, 'best_iteration', None)
+best_score = getattr(baseline_model, 'best_score', None)
+print(f"\nBest iteration: {best_iter}")
+print(f"Best validation score: {best_score}")
 
 # Evaluate baseline on test set
 y_proba_baseline = baseline_model.predict_proba(X_test)[:, 1]
@@ -384,7 +386,7 @@ for config_name, features_to_remove in test_configs:
         early_stopping_rounds=50,
         verbose=0
     )
-    
+
     model_test.fit(
         X_train_test, y_train_sub,
         eval_set=[(X_val_test, y_val)],
@@ -469,8 +471,10 @@ final_model.fit(
     verbose=50
 )
 
-print(f"\nFinal model - Best iteration: {final_model.best_iteration}")
-print(f"Final model - Best validation score: {final_model.best_score:.4f}")
+final_best_iter = getattr(final_model, 'best_iteration', None)
+final_best_score = getattr(final_model, 'best_score', None)
+print(f"\nFinal model - Best iteration: {final_best_iter}")
+print(f"Final model - Best validation score: {final_best_score}")
 
 # ================================================
 # FIND OPTIMAL THRESHOLD
@@ -479,9 +483,13 @@ y_proba_val = final_model.predict_proba(X_val_final)[:, 1]
 
 # Use precision-recall curve to find best threshold
 precision, recall, thresholds = precision_recall_curve(y_val, y_proba_val)
-f1_scores = 2 * (precision * recall) / (precision + recall + 1e-10)
-optimal_idx = np.argmax(f1_scores)
-optimal_threshold = thresholds[optimal_idx] if optimal_idx < len(thresholds) else 0.5
+if thresholds.size > 0:
+    # precision & recall are length = len(thresholds) + 1. compute f1 for the positions with thresholds
+    f1_scores = 2 * (precision[:-1] * recall[:-1]) / (precision[:-1] + recall[:-1] + 1e-10)
+    optimal_idx = np.argmax(f1_scores)
+    optimal_threshold = float(thresholds[optimal_idx])
+else:
+    optimal_threshold = 0.5
 
 print(f"\nOptimal threshold (based on F1): {optimal_threshold:.3f}")
 
@@ -527,47 +535,47 @@ print(feature_importance.head(15))
 # ================================================
 # SAVE RESULTS & MODEL
 # ================================================
-# metrics = {
-#     "best_params": best_params,
-#     # "best_params": grid_search.best_params_,
-#     # "best_cv_roc_auc": float(grid_search.best_score_),
-#     "optimal_threshold": float(optimal_threshold),
-#     "best_iteration": int(final_model.best_iteration),
-#     "default_threshold": {
-#         "classification_report": classification_report(y_test, y_pred, output_dict=True),
-#         "roc_auc": float(roc_auc_score(y_test, y_proba)),
-#         "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
-#     },
-#     "optimal_threshold": {
-#         "classification_report": classification_report(y_test, y_pred_optimal, output_dict=True),
-#         "roc_auc": float(roc_auc_score(y_test, y_proba)),
-#         "confusion_matrix": confusion_matrix(y_test, y_pred_optimal).tolist(),
-#     },
-#     "train_size": len(X_train_sub),
-#     "val_size": len(X_val),
-#     "test_size": len(X_test),
-#     "scale_pos_weight": float(scale_pos_weight),
-# }
-# with open(RESULTS / "metrics.json", "w") as f:
-#     json.dump(metrics, f, indent=2)
+metrics = {
+    "best_params": best_params,
+    # "best_params": grid_search.best_params_,
+    # "best_cv_roc_auc": float(grid_search.best_score_),
+    "optimal_threshold": float(optimal_threshold),
+    "best_iteration": int(final_model.best_iteration),
+    "default_threshold": {
+        "classification_report": classification_report(y_test, y_pred, output_dict=True),
+        "roc_auc": float(roc_auc_score(y_test, y_proba)),
+        "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+    },
+    "optimal_threshold": {
+        "classification_report": classification_report(y_test, y_pred_optimal, output_dict=True),
+        "roc_auc": float(roc_auc_score(y_test, y_proba)),
+        "confusion_matrix": confusion_matrix(y_test, y_pred_optimal).tolist(),
+    },
+    "train_size": len(X_train_sub),
+    "val_size": len(X_val),
+    "test_size": len(X_test),
+    "scale_pos_weight": float(scale_pos_weight),
+}
+with open(RESULTS / "metrics.json", "w") as f:
+    json.dump(metrics, f, indent=2)
 
-# # Save feature importance
-# feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
+# Save feature importance
+feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
 
-# # Save preprocessing metadata
-# feature_names = X.columns.to_list()
-# num_cols = X.select_dtypes(include='number').columns.tolist()
-# preproc = {
-#     "feature_names": feature_names,
-#     "num_cols": num_cols,
-#     "median": X[feature_names].median().to_dict(),
-#     "optimal_threshold": float(optimal_threshold),
-# }
-# joblib.dump(preproc, MODELS / "preproc.joblib")
+# Save preprocessing metadata
+feature_names = X.columns.to_list()
+num_cols = X.select_dtypes(include='number').columns.tolist()
+preproc = {
+    "feature_names": feature_names,
+    "num_cols": num_cols,
+    "median": X[feature_names].median().to_dict(),
+    "optimal_threshold": float(optimal_threshold),
+}
+joblib.dump(preproc, MODELS / "preproc.joblib")
 
-# # save model
-# joblib.dump(final_model, MODELS / "xgb_model.joblib")
-# print("Saved sklearn wrapper model to", MODELS / "xgb_model.joblib")
+# save model
+joblib.dump(final_model, MODELS / "xgb_model.joblib")
+print("Saved sklearn wrapper model to", MODELS / "xgb_model.joblib")
 
 print(f"\n{'='*60}")
 print("SAVED FILES:")
