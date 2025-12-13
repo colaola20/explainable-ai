@@ -39,7 +39,7 @@
   ],
   "train_size": 119375,
   "test_size": 29844,
-  "scale_pos_weight": 13.918145463634092
+  "scale_pos_weight": 13.918145463634092,
   "best_params": {
     "alpha": 1,
     "colsample_bytree": 0.7,
