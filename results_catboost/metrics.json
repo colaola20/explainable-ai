@@ -1,0 +1,86 @@
+{
+  "model": "CatBoost",
+  "optimal_threshold": 0.6213581595770991,
+  "best_iteration": 945,
+  "best_val_auc": 0.792579158273536,
+  "default_threshold": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8825336799810919,
+        "recall": 0.7990584207147443,
+        "f1-score": 0.8387241689128482,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.46919163369135103,
+        "recall": 0.6254709871891485,
+        "f1-score": 0.5361757105943152,
+        "support": 1327.0
+      },
+      "accuracy": 0.7606666666666667,
+      "macro avg": {
+        "precision": 0.6758626568362215,
+        "recall": 0.7122647039519464,
+        "f1-score": 0.6874499397535817,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7911161974100109,
+        "recall": 0.7606666666666667,
+        "f1-score": 0.7718105348813994,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7828036479504911,
+    "confusion_matrix": [
+      [
+        3734,
+        939
+      ],
+      [
+        497,
+        830
+      ]
+    ]
+  },
+  "optimal_threshold_metrics": {
+    "classification_report": {
+      "0": {
+        "precision": 0.8679245283018868,
+        "recall": 0.8760967258720308,
+        "f1-score": 0.8719914802981895,
+        "support": 4673.0
+      },
+      "1": {
+        "precision": 0.54871395167576,
+        "recall": 0.5305199698568199,
+        "f1-score": 0.539463601532567,
+        "support": 1327.0
+      },
+      "accuracy": 0.7996666666666666,
+      "macro avg": {
+        "precision": 0.7083192399888234,
+        "recall": 0.7033083478644253,
+        "f1-score": 0.7057275409153783,
+        "support": 6000.0
+      },
+      "weighted avg": {
+        "precision": 0.7973257891047418,
+        "recall": 0.7996666666666666,
+        "f1-score": 0.7984473977778593,
+        "support": 6000.0
+      }
+    },
+    "roc_auc": 0.7828036479504911,
+    "confusion_matrix": [
+      [
+        4094,
+        579
+      ],
+      [
+        623,
+        704
+      ]
+    ]
+  }
+}
