@@ -1,0 +1,107 @@
+{
+  "final_approach": "Extra Trees",
+  "final_test_auc": 0.7832669550147062,
+  "improvement_vs_simple_avg": 0.019133791566006142,
+  "improvement_vs_original_baseline": -0.1033044985293774,
+  "optimal_threshold": 0.2686658536327588,
+  "all_meta_learners": [
+    {
+      "name": "Logistic Regression (L2)",
+      "test_auc": 0.7829772469949142,
+      "improvement_vs_avg": -0.009837010413193958,
+      "vs_baseline": -0.1322753005085775
+    },
+    {
+      "name": "Logistic Regression (L1)",
+      "test_auc": 0.7829222564940798,
+      "improvement_vs_avg": -0.015336060496640158,
+      "vs_baseline": -0.1377743505920237
+    },
+    {
+      "name": "Ridge Classifier",
+      "test_auc": 0.7830225617478013,
+      "improvement_vs_avg": -0.005305535124489058,
+      "vs_baseline": -0.1277438252198726
+    },
+    {
+      "name": "XGBoost (Shallow)",
+      "test_auc": 0.7798782661898244,
+      "improvement_vs_avg": -0.31973509092217967,
+      "vs_baseline": -0.4421733810175632
+    },
+    {
+      "name": "LightGBM (Shallow)",
+      "test_auc": 0.7820489396105931,
+      "improvement_vs_avg": -0.10266774884530872,
+      "vs_baseline": -0.22510603894069225
+    },
+    {
+      "name": "Random Forest",
+      "test_auc": 0.7824138765706763,
+      "improvement_vs_avg": -0.06617405283698696,
+      "vs_baseline": -0.1886123429323705
+    },
+    {
+      "name": "Extra Trees",
+      "test_auc": 0.7832669550147062,
+      "improvement_vs_avg": 0.019133791566006142,
+      "vs_baseline": -0.1033044985293774
+    },
+    {
+      "name": "MLP (Neural Net)",
+      "test_auc": 0.7829549927746351,
+      "improvement_vs_avg": -0.012062432441106719,
+      "vs_baseline": -0.13450072253649026
+    }
+  ],
+  "top_k_ensemble": {
+    "members": [
+      "Extra Trees",
+      "Ridge Classifier",
+      "Logistic Regression (L2)"
+    ],
+    "weights": [
+      0.33340911602646073,
+      0.33330508643276996,
+      0.3332857975407692
+    ],
+    "test_auc": 0.7831641501927652
+  },
+  "classification_report_optimal": {
+    "0": {
+      "precision": 0.8801812004530011,
+      "recall": 0.8315857051144875,
+      "f1-score": 0.855193661971831,
+      "support": 4673.0
+    },
+    "1": {
+      "precision": 0.5034700315457413,
+      "recall": 0.6013564431047476,
+      "f1-score": 0.5480769230769231,
+      "support": 1327.0
+    },
+    "accuracy": 0.7806666666666666,
+    "macro avg": {
+      "precision": 0.6918256159993712,
+      "recall": 0.7164710741096175,
+      "f1-score": 0.7016352925243771,
+      "support": 6000.0
+    },
+    "weighted avg": {
+      "precision": 0.7968652469296789,
+      "recall": 0.7806666666666666,
+      "f1-score": 0.7872696765529071,
+      "support": 6000.0
+    }
+  },
+  "confusion_matrix_optimal": [
+    [
+      3886,
+      787
+    ],
+    [
+      529,
+      798
+    ]
+  ]
+}

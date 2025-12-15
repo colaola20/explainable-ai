@@ -263,6 +263,7 @@ df['consecutive_x_utilization'] = df['consecutive_delays'] * df['util_rate_max']
 
 
 
+
 # ================================================
 # HANDLE INFINITE/NAN VALUES
 # ================================================
