@@ -1,0 +1,58 @@
+{
+  "method": "SHAP",
+  "computation_time_seconds": 1.0816295146942139,
+  "avg_time_per_instance": 0.00018027158578236898,
+  "consistency_variance": 0.0016144603723660111,
+  "consistency_std": 0.04018034785985947,
+  "avg_nonzero_features": 38.2785,
+  "avg_features_above_threshold": 7.9785,
+  "features_covered": 114,
+  "features_with_nonzero_importance": 114,
+  "shap_values_std": 0.04323480650782585,
+  "shap_values_mean": 0.016293540596961975,
+  "shap_values_max": 0.8504404425621033,
+  "shap_values_min": 7.80812570155831e-09,
+  "top_10_features": [
+    {
+      "feature": "severe_x_recent",
+      "importance": 0.28699997067451477
+    },
+    {
+      "feature": "pay_0",
+      "importance": 0.14062188565731049
+    },
+    {
+      "feature": "pay_status_max",
+      "importance": 0.12774445116519928
+    },
+    {
+      "feature": "severe_recent_x_pay_max",
+      "importance": 0.08966036140918732
+    },
+    {
+      "feature": "bill_amt_std",
+      "importance": 0.06872304528951645
+    },
+    {
+      "feature": "pay_ratio_min",
+      "importance": 0.05054909735918045
+    },
+    {
+      "feature": "pay_amt1",
+      "importance": 0.046609219163656235
+    },
+    {
+      "feature": "limit_per_age",
+      "importance": 0.042131830006837845
+    },
+    {
+      "feature": "pay_amt3",
+      "importance": 0.04148854315280914
+    },
+    {
+      "feature": "pay_x_limit",
+      "importance": 0.04035629332065582
+    }
+  ],
+  "n_samples_explained": 6000
+}

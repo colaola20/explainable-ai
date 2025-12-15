@@ -7,16 +7,15 @@ import matplotlib.pyplot as plt
 import json
 import time
 from sklearn.model_selection import train_test_split
+from catboost import CatBoostClassifier
 
-# TO RUN:
-# python scripts/shap_xai.py
 
 # ================================================
 # DIR SETUP
 # ================================================
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS = ROOT / "results" / "shap"
-MODELS = ROOT / "models"
+RESULTS = ROOT / "results_catboost" / "shap_catboost_model"
+MODELS = ROOT / "models_catboost"
 
 RESULTS.mkdir(parents=True, exist_ok=True)
 
@@ -28,8 +27,9 @@ print("="*60)
 # LOAD MODEL & DATA
 # ================================================
 print("\nLoading model and data...")
-model = joblib.load(MODELS / "xgb_baseline.joblib")
-df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
+model = CatBoostClassifier()
+model.load_model(str(MODELS / "catboost_model.cbm"))
+df = pd.read_csv(ROOT / 'data_preprocessing/data/processed/preprocessed_data_with_features.csv')
 
 y = df['default'].astype(int)
 X = df.drop(columns=['default'])
