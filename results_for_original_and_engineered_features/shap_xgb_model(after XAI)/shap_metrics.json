@@ -1,17 +1,17 @@
 {
   "method": "SHAP",
-  "computation_time_seconds": 1.0816295146942139,
-  "avg_time_per_instance": 0.00018027158578236898,
-  "consistency_variance": 0.0016144603723660111,
-  "consistency_std": 0.04018034785985947,
+  "computation_time_seconds": 1.3869349956512451,
+  "avg_time_per_instance": 0.00023115583260854085,
+  "consistency_variance": 0.0016144601395353675,
+  "consistency_std": 0.04018034413456917,
   "avg_nonzero_features": 38.2785,
   "avg_features_above_threshold": 7.9785,
   "features_covered": 114,
   "features_with_nonzero_importance": 114,
-  "shap_values_std": 0.04323480650782585,
+  "shap_values_std": 0.04323481023311615,
   "shap_values_mean": 0.016293540596961975,
   "shap_values_max": 0.8504404425621033,
-  "shap_values_min": 7.80812570155831e-09,
+  "shap_values_min": 7.778908184263855e-09,
   "top_10_features": [
     {
       "feature": "severe_x_recent",
@@ -43,7 +43,7 @@
     },
     {
       "feature": "limit_per_age",
-      "importance": 0.042131830006837845
+      "importance": 0.04213183373212814
     },
     {
       "feature": "pay_amt3",

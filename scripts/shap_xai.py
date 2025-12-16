@@ -8,14 +8,15 @@ import json
 import time
 from sklearn.model_selection import train_test_split
 from catboost import CatBoostClassifier
+from xgboost import XGBClassifier
 
 
 # ================================================
 # DIR SETUP
 # ================================================
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS = ROOT / "results_catboost" / "shap_catboost_model"
-MODELS = ROOT / "models_catboost"
+RESULTS = ROOT / "results_for_original_and_engineered_features" / "shap_xgb_model(after XAI)"
+MODELS = ROOT / "models_for_original_and_engineered_features"
 
 RESULTS.mkdir(parents=True, exist_ok=True)
 
@@ -27,8 +28,11 @@ print("="*60)
 # LOAD MODEL & DATA
 # ================================================
 print("\nLoading model and data...")
-model = CatBoostClassifier()
-model.load_model(str(MODELS / "catboost_model.cbm"))
+# model = CatBoostClassifier()
+# model.load_model(str(MODELS / "catboost_model.cbm"))
+
+model = joblib.load(MODELS / "xgb_model.joblib")
+
 df = pd.read_csv(ROOT / 'data_preprocessing/data/processed/preprocessed_data_with_features.csv')
 
 y = df['default'].astype(int)
@@ -120,6 +124,8 @@ for idx in [1, 5, 10]:
     plt.savefig(RESULTS / f'shap_waterfall_sample_{idx}.png', dpi=300, bbox_inches='tight')
     plt.close()
 
+
+
 # # 5. Force Plot (save as image)
 # plt.figure(figsize=(20, 3))
 # shap.force_plot(
@@ -184,6 +190,63 @@ shap_metrics = {
     # 7. Sample info
     'n_samples_explained': len(X_test)
 }
+
+# 1. Add dependence plots for top features (shows feature interactions)
+for i, feature in enumerate(feature_importance_df.head(5)['feature']):
+    plt.figure(figsize=(10, 6))
+    shap.dependence_plot(
+        feature, 
+        shap_values, 
+        X_test,
+        show=False
+    )
+    plt.title(f'SHAP Dependence Plot: {feature}', fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig(RESULTS / f'shap_dependence_{feature}.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"   Saved: shap_dependence_{feature}.png")
+
+# 2. Add decision plot (shows how features accumulate to final prediction)
+plt.figure(figsize=(12, 8))
+shap.decision_plot(
+    explainer.expected_value, 
+    shap_values[:100],  # First 100 samples
+    X_test.iloc[:100],
+    show=False
+)
+plt.title('SHAP Decision Plot: Feature Contribution Paths', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(RESULTS / 'shap_decision_plot.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 3. Add beeswarm plot (alternative to summary plot, sometimes clearer)
+plt.figure(figsize=(12, 8))
+shap.plots.beeswarm(
+    shap.Explanation(
+        values=shap_values,
+        base_values=explainer.expected_value,
+        data=X_test.values,
+        feature_names=X_test.columns.tolist()
+    ),
+    max_display=20,
+    show=False
+)
+plt.tight_layout()
+plt.savefig(RESULTS / 'shap_beeswarm_plot.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+# Add this to your code to analyze feature distribution:
+shap_stats = {
+    'total_features': 114,
+    'features_with_nonzero_importance': (mean_abs_shap > 0).sum(),
+    'top_10_cumulative_importance': feature_importance_df.head(10)['importance'].sum(),
+    'top_20_cumulative_importance': feature_importance_df.head(20)['importance'].sum(),
+    'concentration_ratio': feature_importance_df.head(10)['importance'].sum() / 
+                          feature_importance_df['importance'].sum()
+}
+
+print(shap_stats)
 
 # Save metrics
 with open(RESULTS / 'shap_metrics.json', 'w') as f:

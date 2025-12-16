@@ -1,0 +1,38 @@
+{
+  "criteria_weights": {
+    "Payment_Behavior_Risk": 0.5213087237405583,
+    "Financial_Capacity_Risk": 0.1673470480134772,
+    "Severe_Default_Risk": 0.16557828026861818,
+    "Interaction_Risk": 0.008071502798479195,
+    "Other_Risk": 0.13769444517886723
+  },
+  "method_weights": {
+    "topsis_weighted": 0.3,
+    "saw_weighted": 0.25,
+    "vikor_weighted": 0.25,
+    "wpm_weighted": 0.2
+  },
+  "performance": {
+    "model_only_auc": 0.7842687980834279,
+    "mcdm_ensemble_auc": 0.7646569439375877,
+    "hybrid_auc": 0.7831347197927584,
+    "model_only_accuracy": 0.7708333333333334,
+    "mcdm_ensemble_accuracy": 0.7633333333333333,
+    "hybrid_accuracy": 0.773
+  },
+  "method_aucs": {
+    "topsis_equal": 0.2221074391826831,
+    "topsis_weighted": 0.21957045807087194,
+    "saw_equal": 0.7787058074322968,
+    "saw_weighted": 0.7837315521786479,
+    "wpm_equal": 0.7785101960612933,
+    "wpm_weighted": 0.7805896755576577,
+    "vikor_equal": 0.7497719345577563,
+    "vikor_weighted": 0.7497719345577563,
+    "ensemble": 0.7646569439375877
+  },
+  "alpha_beta": {
+    "alpha": 0.6,
+    "beta": 0.4
+  }
+}

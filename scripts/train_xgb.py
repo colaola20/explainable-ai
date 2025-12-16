@@ -30,11 +30,7 @@ MODELS.mkdir(parents=True, exist_ok=True)
 # LOAD DATA
 # ================================================
 try:
-<<<<<<< HEAD
     df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
-=======
-    df = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data_with_features.csv')
->>>>>>> 951ba45874b483643301c1e188738a0c5dce2c92
 except FileNotFoundError:
     raise FileNotFoundError("Preprocessed CSV not found. Check your path.")
 
@@ -563,16 +559,11 @@ metrics = {
 with open(RESULTS / "metrics.json", "w") as f:
     json.dump(metrics, f, indent=2)
 
-<<<<<<< HEAD
 # save model
 joblib.dump(final_model, MODELS / "xgb_baseline_giveMeSomeCredit.joblib")
 print("Saved sklearn wrapper model to", MODELS / "xgb_baseline_giveMeSomeCredit.joblib")
 # # Save feature importance
 # feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
-=======
-# Save feature importance
-feature_importance.to_csv(RESULTS / "feature_importance.csv", index=False)
->>>>>>> 951ba45874b483643301c1e188738a0c5dce2c92
 
 # Save preprocessing metadata
 feature_names = X.columns.to_list()
@@ -597,8 +588,6 @@ print(f"✓ Preprocessing: {MODELS / 'preproc.joblib'}")
 print(f"✓ Metrics: {RESULTS / 'metrics.json'}")
 print(f"✓ Feature importance: {RESULTS / 'feature_importance.csv'}")
 print("\nTraining complete!")
-<<<<<<< HEAD
-=======
 
 
 
@@ -665,4 +654,3 @@ print(f"✓ Saved: {RESULTS / 'feature_removal_comparison.png'}")
 print("\n" + "="*60)
 print("Training complete!")
 print("="*60)
->>>>>>> 951ba45874b483643301c1e188738a0c5dce2c92

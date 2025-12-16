@@ -1,0 +1,58 @@
+{
+  "method": "SHAP",
+  "computation_time_seconds": 0.5726299285888672,
+  "avg_time_per_instance": 9.543832143147786e-05,
+  "consistency_variance": 0.0010786256380937687,
+  "consistency_std": 0.03284243654319467,
+  "avg_nonzero_features": 53.33383333333333,
+  "avg_features_above_threshold": 8.053833333333333,
+  "features_covered": 114,
+  "features_with_nonzero_importance": 114,
+  "shap_values_std": 0.03709873682842908,
+  "shap_values_mean": 0.017595158397372215,
+  "shap_values_max": 0.9965486646457556,
+  "shap_values_min": 1.3703316734036352e-08,
+  "top_10_features": [
+    {
+      "feature": "pay_0",
+      "importance": 0.22462074403799265
+    },
+    {
+      "feature": "consecutive_delays",
+      "importance": 0.09435567781876773
+    },
+    {
+      "feature": "pay_status_max",
+      "importance": 0.08809986138593623
+    },
+    {
+      "feature": "severe_delay_count",
+      "importance": 0.06088250953901342
+    },
+    {
+      "feature": "limit_per_age",
+      "importance": 0.05503915489698444
+    },
+    {
+      "feature": "consecutive_x_severe",
+      "importance": 0.05254809677876564
+    },
+    {
+      "feature": "pay_amt1",
+      "importance": 0.049038626158862814
+    },
+    {
+      "feature": "bill_amt_std",
+      "importance": 0.04639845828679941
+    },
+    {
+      "feature": "severe_x_recent",
+      "importance": 0.04447441616816317
+    },
+    {
+      "feature": "recent_pay_mean_cube",
+      "importance": 0.03740756306072652
+    }
+  ],
+  "n_samples_explained": 6000
+}
