@@ -30,7 +30,7 @@ MODELS.mkdir(parents=True, exist_ok=True)
 # LOAD DATA
 # ================================================
 try:
-    df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data.csv')
+    df = pd.read_csv('data_preprocessing/data/processed/preprocessed_data_with_features.csv')
 except FileNotFoundError:
     raise FileNotFoundError("Preprocessed CSV not found. Check your path.")
 
@@ -203,79 +203,8 @@ baseline_model = xgb.XGBClassifier(
     n_jobs=-1,
     early_stopping_rounds=50,
 
-# ================================================
-# MODEL 1: BALANCED CONFIGURATION
-# ================================================
-
-    # KEY CHANGES for balanced features:
-    # max_depth=3,              # Lower depth = can't rely on one feature
-    # min_child_weight=10,      # Need more samples per leaf
-    # learning_rate=0.05,       # Faster learning
-    # n_estimators=500,         
-    # subsample=0.7,            # Use 70% of data per tree
-    # colsample_bytree=0.5,     # Use only 50% of features per tree! KEY!
-    # colsample_bylevel=0.7,    # And 70% per level
-    
-    # # Regularization
-    # reg_alpha=1,              # L1 regularization
-    # reg_lambda=3,             # L2 regularization
-    # gamma=0.5,                # Minimum loss reduction
 )
 
-# ================================================
-# MODEL 2: VERY SHALLOW TREES
-# ================================================
-
-# final_model = xgb.XGBClassifier(
-#     objective="binary:logistic",
-#     eval_metric="auc",
-#     scale_pos_weight=scale_pos_weight,
-#     random_state=42,
-#     use_label_encoder=False,
-#     n_jobs=-1,
-#     early_stopping_rounds=50,
-    
-#     max_depth=2,              # VERY shallow
-#     min_child_weight=20,      
-#     learning_rate=0.1,        
-#     n_estimators=1000,        # More trees to compensate
-#     subsample=0.8,            
-#     colsample_bytree=0.6,     
-    
-#     reg_alpha=0.5,            
-#     reg_lambda=2,             
-#     gamma=0.3,                
-# )
-
-# ================================================
-# MODEL 3: DART (Dropouts)
-# ================================================
-
-# final_model = xgb.XGBClassifier(
-#     objective="binary:logistic",
-#     eval_metric="auc",
-#     scale_pos_weight=scale_pos_weight,
-#     random_state=42,
-#     use_label_encoder=False,
-#     n_jobs=-1,
-#     early_stopping_rounds=50,
-    
-#     booster='dart',           # Use DART instead of gbtree
-#     rate_drop=0.3,            # Drop 30% of trees each round
-#     skip_drop=0.5,            # 50% chance to skip dropout
-    
-#     max_depth=4,              
-#     min_child_weight=5,       
-#     learning_rate=0.05,       
-#     n_estimators=500,         
-#     subsample=0.8,            
-#     colsample_bytree=0.7,     
-    
-#     reg_alpha=1,              
-#     reg_lambda=2,             
-# )
-
-# ================================================
 
 
 baseline_model.fit(
@@ -597,7 +526,7 @@ print("\nTraining complete!")
 # ================================================
 print("\nGenerating visualizations...")
 
-# Plot 1: Permutation importance
+# Plot 1: Permutation importance (keep as is)
 fig, axes = plt.subplots(1, 2, figsize=(15, 6))
 
 bottom_20 = perm_df.head(20)
@@ -625,30 +554,75 @@ plt.tight_layout()
 plt.savefig(RESULTS / 'noise_detection_permutation.png', dpi=300)
 print(f"✓ Saved: {RESULTS / 'noise_detection_permutation.png'}")
 
-# Plot 2: Feature removal comparison
+# ================================================
+# Plot 2: Feature removal comparison - FIXED
+# ================================================
 fig, axes = plt.subplots(1, 2, figsize=(15, 6))
 
+# LEFT PLOT: AUC vs Features (with tight y-axis)
 axes[0].plot(results_df['features_kept'], results_df['test_auc'], 'o-', 
-             linewidth=2, markersize=8)
-axes[0].axhline(y=baseline_auc, color='r', linestyle='--', label='Baseline')
-axes[0].set_xlabel('Number of Features Kept')
-axes[0].set_ylabel('Test ROC AUC')
-axes[0].set_title('Model Performance vs Feature Count')
-axes[0].grid(True, alpha=0.3)
-axes[0].legend()
+             linewidth=2, markersize=8, color='steelblue')
+axes[0].axhline(y=baseline_auc, color='red', linestyle='--', linewidth=2, label='Baseline')
 
+# KEY FIX: Set y-axis range to show the actual small differences
+y_min = results_df['test_auc'].min() - 0.001
+y_max = results_df['test_auc'].max() + 0.001
+axes[0].set_ylim([y_min, y_max])
+
+# Add AUC values on each point
+for idx, row in results_df.iterrows():
+    axes[0].annotate(f"{row['test_auc']:.4f}", 
+                    xy=(row['features_kept'], row['test_auc']),
+                    xytext=(0, 5), textcoords='offset points',
+                    ha='center', fontsize=9, fontweight='bold')
+
+axes[0].set_xlabel('Number of Features Kept', fontsize=11)
+axes[0].set_ylabel('Test ROC AUC', fontsize=11)
+axes[0].set_title('Model Performance vs Feature Count\n(Note: Very Small Changes)', 
+                 fontsize=12, fontweight='bold')
+axes[0].grid(True, alpha=0.3)
+axes[0].legend(fontsize=10)
+
+# RIGHT PLOT: Improvement bars with better visualization
 improvement = results_df['improvement']
-colors = ['green' if x >= 0 else 'red' for x in improvement]
-axes[1].barh(range(len(results_df)), improvement, color=colors)
+
+# Color coding: Only green if improvement > 0.001 (meaningful)
+colors = []
+for imp in improvement:
+    if imp > 0.001:
+        colors.append('green')      # Meaningful improvement
+    elif imp > 0:
+        colors.append('lightgreen') # Negligible positive
+    elif imp > -0.001:
+        colors.append('gray')       # Negligible negative
+    else:
+        colors.append('red')        # Meaningful degradation
+
+bars = axes[1].barh(range(len(results_df)), improvement, color=colors, alpha=0.7)
+
+# Add value labels on bars
+for i, (bar, imp) in enumerate(zip(bars, improvement)):
+    width = bar.get_width()
+    label_x = width if width > 0 else width
+    axes[1].text(label_x, bar.get_y() + bar.get_height()/2.,
+                f'{imp:+.4f}',
+                ha='left' if width > 0 else 'right',
+                va='center', fontsize=9, fontweight='bold')
+
 axes[1].set_yticks(range(len(results_df)))
 axes[1].set_yticklabels(results_df['config'], fontsize=9)
-axes[1].axvline(x=0, color='black', linestyle='-', linewidth=0.5)
-axes[1].set_xlabel('AUC Change from Baseline')
-axes[1].set_title('Performance Change by Configuration')
+axes[1].axvline(x=0, color='black', linestyle='-', linewidth=1.5)
+axes[1].axvline(x=0.001, color='green', linestyle=':', linewidth=1, alpha=0.5, label='Meaningful (+0.001)')
+axes[1].axvline(x=-0.001, color='red', linestyle=':', linewidth=1, alpha=0.5, label='Meaningful (-0.001)')
+
+axes[1].set_xlabel('AUC Change from Baseline', fontsize=11)
+axes[1].set_title('Performance Change by Configuration\n(Removing noise features has negligible/negative effect)', 
+                 fontsize=12, fontweight='bold')
 axes[1].grid(True, alpha=0.3, axis='x')
+axes[1].legend(fontsize=9)
 
 plt.tight_layout()
-plt.savefig(RESULTS / 'feature_removal_comparison.png', dpi=300)
+plt.savefig(RESULTS / 'feature_removal_comparison.png', dpi=300, bbox_inches='tight')
 print(f"✓ Saved: {RESULTS / 'feature_removal_comparison.png'}")
 
 print("\n" + "="*60)

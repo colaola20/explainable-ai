@@ -123,6 +123,31 @@ print(f"Improvement over best single model: {best_auc - best_single_auc:+.4f}")
 print(f"{'='*60}")
 
 # ================================================
+# DIAGNOSTICS - Check prediction distribution
+# ================================================
+print("\n" + "="*60)
+print("PREDICTION DIAGNOSTICS")
+print("="*60)
+
+print(f"\nBest ensemble: {best_name}")
+print(f"Raw prediction range: [{best_predictions.min():.4f}, {best_predictions.max():.4f}]")
+print(f"Mean: {best_predictions.mean():.4f}")
+
+# Normalize if needed
+if best_name == 'Rank Average' or best_predictions.max() > 10:
+    print("  → Normalizing to [0,1] range...")
+    best_predictions_normalized = (best_predictions - best_predictions.min()) / \
+                                  (best_predictions.max() - best_predictions.min())
+    print(f"  After normalization: [{best_predictions_normalized.min():.4f}, {best_predictions_normalized.max():.4f}]")
+else:
+    best_predictions_normalized = best_predictions.copy()
+    print("  ✓ Already in probability range")
+
+print(f"\nPrediction range: [0.0000, 1.0000]")
+print(f"Predictions > 0.5: {(best_predictions_normalized > 0.5).sum()} / {len(best_predictions_normalized)}")
+print(f"Mean prediction: {best_predictions_normalized.mean():.4f}")
+
+# ================================================
 # DETAILED EVALUATION OF BEST ENSEMBLE
 # ================================================
 print("\n" + "="*60)
@@ -132,11 +157,8 @@ print("="*60)
 # Find optimal threshold
 from sklearn.metrics import precision_recall_curve
 
-# Rank average returns ranks, not probabilities, so normalize to [0,1]
-if best_name == 'Rank Average':
-    best_predictions = (best_predictions - best_predictions.min()) / (best_predictions.max() - best_predictions.min())
+precision, recall, thresholds = precision_recall_curve(y_test, best_predictions_normalized)
 
-precision, recall, thresholds = precision_recall_curve(y_test, best_predictions)
 if thresholds.size > 0:
     f1_scores = 2 * (precision[:-1] * recall[:-1]) / (precision[:-1] + recall[:-1] + 1e-10)
     optimal_idx = np.argmax(f1_scores)
@@ -146,9 +168,9 @@ else:
 
 print(f"\nOptimal threshold: {optimal_threshold:.3f}")
 
-# Predictions with default and optimal thresholds
-y_pred_default = (best_predictions >= 0.5).astype(int)
-y_pred_optimal = (best_predictions >= optimal_threshold).astype(int)
+# Predictions with both thresholds (using normalized predictions)
+y_pred_default = (best_predictions_normalized >= 0.5).astype(int)
+y_pred_optimal = (best_predictions_normalized >= optimal_threshold).astype(int)
 
 print("\n--- With Default Threshold (0.5) ---")
 print(classification_report(y_test, y_pred_default))

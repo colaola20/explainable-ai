@@ -1,4 +1,4 @@
-# Save this as: beat_baseline_single.py
+# Run: python scripts/test_baseline.py
 
 import pandas as pd
 import numpy as np
@@ -9,9 +9,9 @@ import xgboost as xgb
 # Load data
 df_original = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data.csv')
 
-df = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data_with_features.csv')
-y = df['default'].astype(int)
-X = df.drop(columns=['default'])
+# df = pd.read_csv('./data_preprocessing/data/processed/preprocessed_data_with_features.csv')
+y = df_original['default'].astype(int)
+X = df_original.drop(columns=['default'])
 
 # Use EXACT same split as original
 X_train, X_test, y_train, y_test = train_test_split(
@@ -68,8 +68,3 @@ print("="*80)
 print(f"Test AUC: {test_auc:.4f}")
 print(f"Original baseline: 0.7843")
 print(f"Difference: {(test_auc - 0.7843)*100:+.2f}%")
-
-if test_auc > 0.7843:
-    print("\n🎉 SUCCESS! Beat the baseline!")
-else:
-    print("\n😔 Did not beat baseline. Try Option B (Optuna)")
